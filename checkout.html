@@ -3,225 +3,362 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Checkout</title>
+  <title>Checkout | LuxeLiving</title>
   <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <style>
     body {
-      font-family: sans-serif;
-      padding: 2rem;
+      font-family: 'Inter', sans-serif;
       background: #f4f4f4;
+      margin: 0;
+      padding-bottom: 100px;
     }
 
-    form {
-      max-width: 480px;
-      margin: auto;
+    header {
+      background: #121212;
+      color: white;
+      text-align: center;
+      padding: 1.5rem;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1.8rem;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+
+    form, #cartSummary {
+      max-width: 500px;
+      margin: 2rem auto;
       background: white;
       padding: 2rem;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      border-radius: 12px;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.08);
     }
 
     input, textarea, select {
       width: 100%;
-      margin: 0.6rem 0;
-      padding: 0.8rem;
-      border-radius: 6px;
+      margin: 0.7rem 0;
+      padding: 0.9rem;
+      border-radius: 8px;
       border: 1px solid #ccc;
+      transition: border 0.3s ease;
+    }
+
+    input:focus, textarea:focus {
+      outline: none;
+      border: 1px solid #000;
+      background: #fafafa;
     }
 
     button {
-      background: #000;
+      background: linear-gradient(to right, #000, #333);
       color: white;
       padding: 1rem;
       border: none;
-      border-radius: 6px;
+      border-radius: 8px;
       cursor: pointer;
       width: 100%;
       margin-top: 1rem;
+      font-weight: 600;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
 
-    #orderStatus {
-      text-align: center;
-      margin-top: 1rem;
-      font-weight: bold;
-    }
-
-    #upiDetails {
-      display: none;
-      background: #f9f9f9;
-      padding: 1rem;
-      margin: 1rem 0;
-      border-radius: 6px;
-      text-align: center;
-    }
-
-    #upiDetails img {
-      width: 200px;
-      height: auto;
-      margin-top: 10px;
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
     }
 
     .radio-group {
       display: flex;
       gap: 1rem;
       margin-top: 1rem;
-      align-items: center;
     }
 
-    h3 {
+    .radio-group label {
+      flex: 1;
+      padding: 0.6rem;
+      border: 1px solid #ccc;
+      border-radius: 8px;
       text-align: center;
+      cursor: pointer;
+      background: #f9f9f9;
+    }
+
+    .radio-group input:checked + label {
+      background: #000;
+      color: white;
+      border-color: #000;
+    }
+
+    .radio-group input {
+      display: none;
+    }
+
+    #orderStatus {
+      text-align: center;
+      margin-top: 1rem;
+      font-weight: bold;
+      color: red;
+    }
+
+    #upiDetails {
+      display: none;
+      background: #f7f7f7;
+      padding: 1rem;
+      margin: 1rem 0;
+      border-radius: 8px;
+    }
+
+    #upiDetails img {
+      width: 200px;
+      height: auto;
+    }
+
+    .remove-btn {
+      background: none;
+      color: red;
+      border: none;
+      cursor: pointer;
+      font-size: 1.3rem;
+    }
+
+    @media(max-width: 500px) {
+      body {
+        padding: 1rem;
+      }
+      form, #cartSummary {
+        padding: 1rem;
+      }
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #333;
+      color: white;
+      padding: 12px 20px;
+      border-radius: 6px;
+      opacity: 0;
+      animation: fadein 0.3s forwards, fadeout 0.3s 2.8s forwards;
+      z-index: 9999;
+    }
+
+    @keyframes fadein { to { opacity: 1; } }
+    @keyframes fadeout { to { opacity: 0; } }
+
+    .popup-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 10000;
+    }
+
+    .popup-box {
+      background: white;
+      padding: 2rem;
+      border-radius: 10px;
+      max-width: 90%;
+      text-align: center;
+    }
+
+    .popup-box button {
+      width: auto;
+      padding: 0.6rem 1.2rem;
+      margin: 0.5rem;
     }
   </style>
 </head>
 <body>
 
-<h2 style="text-align:center;">Checkout</h2>
+<header>🪑 LuxeLiving Checkout</header>
+
+<h2 style="text-align:center; margin-top:1rem;">Your Order <span id="cartCount" style="font-size: 1rem; color: gray;"></span></h2>
+
+<div id="cartSummary">
+  <h3 style="text-align:center;">🛒 Cart Summary</h3>
+  <div id="cartItems"></div>
+</div>
 
 <form id="orderForm">
-  <input type="text" name="name" placeholder="Your Name" required>
+  <input type="text" name="name" placeholder="Your Full Name" required>
   <input type="email" name="email" placeholder="Email Address" required>
-  <textarea name="address" placeholder="Shipping Address" required></textarea>
+  <textarea name="address" placeholder="Complete Shipping Address" required></textarea>
 
   <h3>Total: ₹<span id="totalDisplay">0</span></h3>
 
   <div class="radio-group">
-    <label><input type="radio" name="payment" value="upi" required> UPI Payment</label>
-    <label><input type="radio" name="payment" value="cod"> Cash on Delivery</label>
+    <input type="radio" id="upi" name="payment" value="upi" required><label for="upi">UPI</label>
+    <input type="radio" id="cod" name="payment" value="cod"><label for="cod">Cash on Delivery</label>
   </div>
 
   <div id="upiDetails">
-    <p>Pay <strong>₹<span id="amountText">0</span></strong> via any UPI app:</p>
+    <p>Pay ₹<span id="amountText">0</span> via any UPI app</p>
     <p><strong>UPI ID:</strong> 9995262372@ybl</p>
-    <a id="upiLink" href="#" target="_blank">
-      <button type="button" style="margin: 10px auto;">Pay via UPI App</button>
-    </a>
-   <!-- <img src="your-qr-code.png" alt="UPI QR Code" />-->
-    <p style="font-size: 0.9rem; color: #666;">After payment, enter your UPI transaction ID below:</p>
-    <input type="text" name="txn" id="txnField" placeholder="Enter UPI Transaction ID">
+    <a id="upiLink" href="#"><button type="button">Pay via UPI App</button></a>
+    <input type="text" id="txnField" placeholder="Enter UPI Transaction ID">
   </div>
 
   <button type="submit">Place Order</button>
 </form>
 
-<p id="orderStatus" style="color: red;"></p>
+<p id="orderStatus"></p>
 
-<!-- ✅ SHORTENED for brevity -->
+<div id="confirmPopup" class="popup-overlay" style="display:none;">
+  <div class="popup-box">
+    <p>Are you sure you want to place this order?</p>
+    <button onclick="confirmPlaceOrder()">Yes</button>
+    <button onclick="hidePopup('confirmPopup')">Cancel</button>
+  </div>
+</div>
+
+<div id="successPopup" class="popup-overlay" style="display:none;">
+  <div class="popup-box">
+    <p>✅ Order placed successfully!<br>Estimated delivery: <span id="deliveryDate"></span></p>
+    <button onclick="window.location.href='success.html'">Okay</button>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
 <script>
- const SHEET_API_URL = 'https://sheetdb.io/api/v1/jx92qzkv2np85?sheet=Orders';
-
-
+  const SHEET_API_URL = 'https://sheetdb.io/api/v1/jx92qzkv2np85?sheet=Orders';
   const cart = JSON.parse(localStorage.getItem("cart") || "[]");
   const total = cart.reduce((sum, item) => sum + Number(item.price), 0);
   document.getElementById("totalDisplay").textContent = total;
+  document.getElementById("amountText").textContent = total;
+  document.title = `Checkout (${cart.length} items)`;
+  document.getElementById("cartCount").textContent = `(${cart.length} items)`;
 
-  const upiRadio = document.querySelector('input[value="upi"]');
-  const codRadio = document.querySelector('input[value="cod"]');
+  const upiRadio = document.getElementById("upi");
+  const codRadio = document.getElementById("cod");
   const upiDetails = document.getElementById("upiDetails");
   const txnField = document.getElementById("txnField");
 
-  function toggleUPIDetails() {
-    upiDetails.style.display = upiRadio.checked ? "block" : "none";
-    txnField.required = upiRadio.checked;
-    if (!upiRadio.checked) txnField.value = "";
-  }
-
   document.querySelectorAll('input[name="payment"]').forEach(radio => {
-    radio.addEventListener("change", toggleUPIDetails);
+    radio.addEventListener("change", () => {
+      upiDetails.style.display = upiRadio.checked ? "block" : "none";
+      txnField.required = upiRadio.checked;
+      if (!upiRadio.checked) txnField.value = "";
+    });
   });
 
-  window.addEventListener("DOMContentLoaded", () => toggleUPIDetails());
-
-  document.getElementById("orderForm").addEventListener("submit", function (e) {
+  document.getElementById("orderForm").addEventListener("submit", function(e) {
     e.preventDefault();
-    const name = this.name.value.trim();
-    const email = this.email.value.trim();
-    const address = this.address.value.trim();
+    if (cart.length === 0) return showToast("Your cart is empty!");
+    showPopup("confirmPopup");
+  });
+
+  function confirmPlaceOrder() {
+    hidePopup("confirmPopup");
+    const name = orderForm.name.value.trim();
+    const email = orderForm.email.value.trim();
+    const address = orderForm.address.value.trim();
     const payment = document.querySelector('input[name="payment"]:checked')?.value;
     const txn = txnField.value.trim();
-
     if (!name || !email || !address || !payment || (payment === "upi" && !txn)) {
-      document.getElementById("orderStatus").textContent = "❌ Please fill all required fields.";
+      showToast("Please fill all required fields.");
       return;
     }
 
-    if (payment === "upi") {
-      placeOrder("UPI", txn);
-    } else {
-      placeOrder("COD", "N/A");
-    }
-  });
-
-  function placeOrder(payment_method, txn_id) {
-    document.getElementById("orderStatus").style.color = "black";
-    document.getElementById("orderStatus").textContent = "⏳ Placing your order...";
-
-    const name = document.getElementById("orderForm").name.value.trim();
-    const email = document.getElementById("orderForm").email.value.trim();
-    const address = document.getElementById("orderForm").address.value.trim();
-
     const payload = {
-  data: {
-    "Timestamp": new Date().toLocaleString(),
-    "Name": name,
-    "Email": email,
-    "Address": address,
-    "Payment Method": payment_method,
-    "Transaction ID": txn_id,
-    "Items": JSON.stringify(cart),
-    "Total": total
-  }
-};
-
-fetch(SHEET_API_URL, {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify(payload)
-})
-.then(res => res.json())
-.then(json => {
-  if (json.created) {
-    localStorage.removeItem("cart");
-    document.getElementById("orderStatus").style.color = "green";
-    document.getElementById("orderStatus").textContent = "✅ Order placed successfully!";
-    setTimeout(() => window.location.href = "success.html", 1500);
-  } else {
-    throw new Error("Error saving order");
-  }
-})
-.catch(err => {
-  console.error("Error:", err);
-  document.getElementById("orderStatus").style.color = "red";
-  document.getElementById("orderStatus").textContent = "❌ Failed to place order.";
-});
-
-  }
-
-  // Razorpay Payment
-  upiRadio.addEventListener("click", () => {
-    document.querySelector("#upiLink button").onclick = (e) => {
-      e.preventDefault();
-      const options = {
-        key: "rzp_live_LsOtu3jPLnqjXr",
-        amount: total * 100,
-        currency: "INR",
-        name: "LuxeLiving",
-        description: "Furniture Order",
-        handler: function (response) {
-          txnField.value = response.razorpay_payment_id;
-          document.getElementById("orderForm").dispatchEvent(new Event("submit", { cancelable: true }));
-        },
-        prefill: {
-          name: document.getElementById("orderForm").name.value,
-          email: document.getElementById("orderForm").email.value
-        },
-        theme: { color: "#000" }
-      };
-      new Razorpay(options).open();
+      data: {
+        "Timestamp": new Date().toLocaleString(),
+        "Name": name,
+        "Email": email,
+        "Address": address,
+        "Payment Method": payment.toUpperCase(),
+        "Transaction ID": txn || "N/A",
+        "Items": cart.map(i => `${i.id}: ${i.name} (₹${i.price})`).join(", "),
+        "Total": total
+      }
     };
-  });
-</script>
 
+    fetch(SHEET_API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    }).then(res => res.json()).then(json => {
+      if (json.created) {
+        localStorage.removeItem("cart");
+        const delivery = new Date();
+        delivery.setDate(delivery.getDate() + 5);
+        document.getElementById("deliveryDate").textContent = delivery.toDateString();
+        showPopup("successPopup");
+      } else throw new Error("Save failed");
+    }).catch(() => showToast("Failed to place order."));
+  }
+
+  document.getElementById("upiLink").onclick = function(e) {
+    e.preventDefault();
+    if (cart.length === 0) return showToast("Your cart is empty!");
+
+    const options = {
+      key: "rzp_live_LsOtu3jPLnqjXr",
+      amount: total * 100,
+      currency: "INR",
+      name: "LuxeLiving",
+      description: "Furniture Order",
+      handler: function (response) {
+        txnField.value = response.razorpay_payment_id;
+        orderForm.dispatchEvent(new Event("submit", { cancelable: true }));
+      },
+      prefill: {
+        name: orderForm.name.value,
+        email: orderForm.email.value
+      },
+      theme: { color: "#000" }
+    };
+    new Razorpay(options).open();
+  };
+
+  function showToast(msg) {
+    const toast = document.getElementById("toast");
+    toast.textContent = msg;
+    toast.style.opacity = 1;
+    setTimeout(() => toast.style.opacity = 0, 3000);
+  }
+
+  function showPopup(id) {
+    document.getElementById(id).style.display = "flex";
+  }
+
+  function hidePopup(id) {
+    document.getElementById(id).style.display = "none";
+  }
+
+  const cartItemsContainer = document.getElementById("cartItems");
+  function renderCart() {
+    if (cart.length === 0) {
+      cartItemsContainer.innerHTML = "<p>Your cart is empty.</p>";
+      return;
+    }
+    cartItemsContainer.innerHTML = cart.map((item, index) => `
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;border-bottom:1px solid #eee;padding-bottom:1rem;">
+        <div style="display:flex;gap:1rem;align-items:center;">
+          <img src="${item.image || 'placeholder.jpg'}" alt="${item.name}" style="width:60px;height:60px;object-fit:cover;border-radius:8px;" onerror="this.src='placeholder.jpg'">
+          <div><strong>${item.name}</strong><br><span style="color:gray;">₹${item.price}</span></div>
+        </div>
+        <button class="remove-btn" onclick="confirmRemove(${index})">×</button>
+      </div>
+    `).join("");
+  }
+
+  function confirmRemove(index) {
+    if (confirm("Remove this item from cart?")) {
+      cart.splice(index, 1);
+      localStorage.setItem("cart", JSON.stringify(cart));
+      renderCart();
+      document.getElementById("cartCount").textContent = `(${cart.length} items)`;
+      document.title = `Checkout (${cart.length} items)`;
+      showToast("Item removed");
+    }
+  }
+
+  renderCart();
+</script>
 
 </body>
 </html>
