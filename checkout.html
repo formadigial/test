@@ -160,39 +160,41 @@
     const email = document.getElementById("orderForm").email.value.trim();
     const address = document.getElementById("orderForm").address.value.trim();
 
-    const data = {
-      data: {
-        name,
-        email,
-        address,
-        payment_method,
-        txn_id,
-        items: JSON.stringify(cart),
-        total
-      }
-    };
+    const payload = {
+  data: {
+    "Timestamp": new Date().toLocaleString(),
+    "Name": name,
+    "Email": email,
+    "Address": address,
+    "Payment Method": payment_method,
+    "Transaction ID": txn_id,
+    "Items": JSON.stringify(cart),
+    "Total": total
+  }
+};
 
-    fetch(SHEET_API_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data)
-    })
-    .then(res => res.json())
-    .then(json => {
-      if (json.created === 1) {
-        localStorage.removeItem("cart");
-        document.getElementById("orderStatus").style.color = "green";
-        document.getElementById("orderStatus").textContent = "✅ Order placed successfully!";
-        setTimeout(() => window.location.href = "success.html", 1500);
-      } else {
-        throw new Error("Error saving order");
-      }
-    })
-    .catch(err => {
-      console.error("Error:", err);
-      document.getElementById("orderStatus").style.color = "red";
-      document.getElementById("orderStatus").textContent = "❌ Failed to place order.";
-    });
+fetch(SHEET_API_URL, {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify(payload)
+})
+.then(res => res.json())
+.then(json => {
+  if (json.created) {
+    localStorage.removeItem("cart");
+    document.getElementById("orderStatus").style.color = "green";
+    document.getElementById("orderStatus").textContent = "✅ Order placed successfully!";
+    setTimeout(() => window.location.href = "success.html", 1500);
+  } else {
+    throw new Error("Error saving order");
+  }
+})
+.catch(err => {
+  console.error("Error:", err);
+  document.getElementById("orderStatus").style.color = "red";
+  document.getElementById("orderStatus").textContent = "❌ Failed to place order.";
+});
+
   }
 
   // Razorpay Payment
