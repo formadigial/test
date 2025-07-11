@@ -61,34 +61,35 @@ header {
     <div id="products" class="product-list"></div>
     <button onclick="location.href='checkout.html'" class="checkout-btn">Go to Checkout</button>
   </main>
-  <script>
+ <script>
+  const SHEET_API_URL = 'https://sheetdb.io/api/v1/jx92qzkv2np85';
+  let cart = [];
 
-    const SHEET_API_URL = 'https://script.google.com/macros/s/AKfycbz8MVzh0o8mhIfW5RN2w_B-P4KE6pDI94jepTrZihEctd20FHJuQDnxVWuofwDsyvN_aA/exec'; // replace with your Google Apps Script deployed URL
-let cart = [];
-
-fetch(SHEET_API_URL)
-  .then(res => res.json())
-  .then(data => {
-    const productsEl = document.getElementById("products");
-    data.forEach(product => {
-      const div = document.createElement("div");
-      div.className = "product-card";
-      div.innerHTML = `
-        <img src="${product.image}" alt="${product.name}" />
-        <h3>${product.name}</h3>
-        <p>₹${product.price}</p>
-        <button onclick='addToCart(${JSON.stringify(product)})'>Add to Cart</button>
-      `;
-      productsEl.appendChild(div);
+  fetch(SHEET_API_URL)
+    .then(res => res.json())
+    .then(data => {
+      const productsEl = document.getElementById("products");
+      data.forEach(product => {
+        const div = document.createElement("div");
+        div.className = "product-card";
+        div.innerHTML = `
+          <img src="${product.image}" alt="${product.name}" />
+          <h3>${product.name}</h3>
+          <p>₹${product.price}</p>
+          <button onclick='addToCart(${JSON.stringify(product)})'>Add to Cart</button>
+        `;
+        productsEl.appendChild(div);
+      });
     });
-  });
 
-function addToCart(product) {
-  cart.push(product);
-  localStorage.setItem("cart", JSON.stringify(cart));
-  alert(`${product.name} added to cart!`);
-}
+  function addToCart(product) {
+    cart.push(product);
+    localStorage.setItem("cart", JSON.stringify(cart));
+    alert(`${product.name} added to cart!`);
+  }
+</script>
 
-  </script>
+
+    
 </body>
 </html>
