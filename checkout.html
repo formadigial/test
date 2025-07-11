@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Checkout</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 2rem;
+      background: #f4f4f4;
+    }
+
+    form {
+      max-width: 480px;
+      margin: auto;
+      background: white;
+      padding: 2rem;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    input, textarea, select {
+      width: 100%;
+      margin: 0.6rem 0;
+      padding: 0.8rem;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      background: #000;
+      color: white;
+      padding: 1rem;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 1rem;
+    }
+
+    #orderStatus {
+      text-align: center;
+      margin-top: 1rem;
+      font-weight: bold;
+    }
+
+    #upiDetails {
+      display: none;
+      background: #f9f9f9;
+      padding: 1rem;
+      margin: 1rem 0;
+      border-radius: 6px;
+      text-align: center;
+    }
+
+    #upiDetails img {
+      width: 200px;
+      height: auto;
+      margin-top: 10px;
+    }
+
+    .radio-group {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1rem;
+      align-items: center;
+    }
+
+    h3 {
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+<h2 style="text-align:center;">Checkout</h2>
+
+<form id="orderForm">
+  <input type="text" name="name" placeholder="Your Name" required>
+  <input type="email" name="email" placeholder="Email Address" required>
+  <textarea name="address" placeholder="Shipping Address" required></textarea>
+
+  <h3>Total: ₹<span id="totalDisplay">0</span></h3>
+
+  <div class="radio-group">
+    <label><input type="radio" name="payment" value="upi" required> UPI Payment</label>
+    <label><input type="radio" name="payment" value="cod"> Cash on Delivery</label>
+  </div>
+
+  <div id="upiDetails">
+    <p>Pay <strong>₹<span id="amountText">0</span></strong> via any UPI app:</p>
+    <p><strong>UPI ID:</strong> 9995262372@ybl</p>
+    <a id="upiLink" href="#" target="_blank">
+      <button type="button" style="margin: 10px auto;">Pay via UPI App</button>
+    </a>
+    <img src="your-qr-code.png" alt="UPI QR Code" />
+    <p style="font-size: 0.9rem; color: #666;">After payment, enter your UPI transaction ID below:</p>
+    <input type="text" name="txn" id="txnField" placeholder="Enter UPI Transaction ID">
+  </div>
+
+  <button type="submit">Place Order</button>
+</form>
+
+<p id="orderStatus" style="color: red;"></p>
+
+<script>
+  const SHEET_API_URL = 'https://script.google.com/macros/s/AKfycbz8MVzh0o8mhIfW5RN2w_B-P4KE6pDI94jepTrZihEctd20FHJuQDnxVWuofwDsyvN_aA/exec';
+
+  const cart = JSON.parse(localStorage.getItem("cart") || "[]");
+  const total = cart.reduce((sum, item) => sum + Number(item.price), 0);
+
+  document.getElementById("totalDisplay").textContent = total;
+  document.getElementById("amountText").textContent = total;
+
+  const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  const upiLink = `upi://pay?pa=9995262372@ybl&pn=LuxeLiving&am=${total}&cu=INR&tn=Furniture+Order`;
+
+  const upiButton = document.querySelector("#upiLink button");
+  const upiAnchor = document.getElementById("upiLink");
+
+  if (isMobile) {
+    upiAnchor.href = upiLink;
+  } else {
+    upiAnchor.href = "#";
+    upiButton.disabled = true;
+    upiButton.textContent = "Open in UPI App (Mobile Only)";
+    upiButton.style.background = "#aaa";
+    upiButton.style.cursor = "not-allowed";
+  }
+
+  const upiRadio = document.querySelector('input[value="upi"]');
+  const codRadio = document.querySelector('input[value="cod"]');
+  const upiDetails = document.getElementById("upiDetails");
+  const txnField = document.getElementById("txnField");
+
+  function toggleUPIDetails() {
+    if (upiRadio.checked) {
+      upiDetails.style.display = "block";
+      txnField.required = true;
+    } else {
+      upiDetails.style.display = "none";
+      txnField.required = false;
+      txnField.value = "";
+    }
+  }
+
+  document.querySelectorAll('input[name="payment"]').forEach(radio => {
+    radio.addEventListener("change", toggleUPIDetails);
+  });
+
+  window.addEventListener("DOMContentLoaded", () => {
+    toggleUPIDetails();
+  });
+
+  document.getElementById("orderForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+    document.getElementById("orderStatus").style.color = "red";
+    document.getElementById("orderStatus").textContent = "";
+
+    const name = this.name.value.trim();
+    const email = this.email.value.trim();
+    const address = this.address.value.trim();
+    const payment = document.querySelector('input[name="payment"]:checked')?.value;
+    const txn = payment === "upi" ? txnField.value.trim() : "COD";
+
+    if (!name || !email || !address || !payment || (payment === "upi" && !txn)) {
+      document.getElementById("orderStatus").textContent = "❌ Please fill all required fields.";
+      return;
+    }
+
+    const data = {
+      name,
+      email,
+      address,
+      payment_method: payment.toUpperCase(),
+      txn_id: txn,
+      items: cart,
+      total
+    };
+
+    fetch(SHEET_API_URL, {
+      method: "POST",
+      body: JSON.stringify(data),
+      headers: {
+        "Content-Type": "application/json"
+      }
+    })
+    .then(async res => {
+      const text = await res.text();
+      try {
+        const json = JSON.parse(text);
+        if (json.status === "success") {
+          localStorage.removeItem("cart");
+          document.getElementById("orderStatus").style.color = "green";
+          document.getElementById("orderStatus").textContent = "✅ Order placed successfully!";
+          setTimeout(() => window.location.href = "success.html", 1500);
+        } else {
+          throw new Error(json.message || "Server returned an error.");
+        }
+      } catch (err) {
+        console.error("Parse error:", text);
+        document.getElementById("orderStatus").textContent = "❌ Server error. Please try again.";
+      }
+    })
+    .catch(err => {
+      console.error("Network error:", err);
+      document.getElementById("orderStatus").textContent = "❌ Network error. Try again later.";
+    });
+  });
+</script>
+
+</body>
+</html>
