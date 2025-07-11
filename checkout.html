@@ -107,27 +107,8 @@
 <p id="orderStatus" style="color: red;"></p>
 
 <script>
-  function doPost(e) {
-  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Orders");
-  const data = JSON.parse(e.postData.contents);
-  const timestamp = new Date().toLocaleString();
 
-  sheet.appendRow([
-    timestamp,
-    data.name,
-    data.email,
-    data.address,
-    data.payment_method,
-    data.txn_id,
-    JSON.stringify(data.items),
-    data.total
-  ]);
-Logger.log(data);
 
-  return ContentService
-    .createTextOutput(JSON.stringify({ status: "success" }))
-    .setMimeType(ContentService.MimeType.JSON);
-}
 
   const SHEET_API_URL = 'https://script.google.com/macros/s/AKfycbz8MVzh0o8mhIfW5RN2w_B-P4KE6pDI94jepTrZihEctd20FHJuQDnxVWuofwDsyvN_aA/exec';
 
@@ -218,11 +199,12 @@ Logger.log(data);
         throw new Error(json.message || "Server error");
       }
     })
-    .catch(err => {
-      console.error(err);
-      document.getElementById("orderStatus").style.color = "red";
-      document.getElementById("orderStatus").textContent = "❌ Network error. Try again later.";
-    });
+.catch(err => {
+  console.error("Fetch failed:", err, data);
+  document.getElementById("orderStatus").style.color = "red";
+  document.getElementById("orderStatus").textContent = "❌ Network error. Try again later.";
+});
+
   }
 
   // Razorpay Payment
@@ -252,6 +234,10 @@ Logger.log(data);
       rzp.open();
     };
   });
+
+
+
+  
 </script>
 
 </body>
