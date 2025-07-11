@@ -108,7 +108,8 @@
 
 <!-- ✅ SHORTENED for brevity -->
 <script>
-  const SHEET_API_URL = "https://sheetdb.io/api/v1/jx92qzkv2np85";
+ const SHEET_API_URL = 'https://sheetdb.io/api/v1/jx92qzkv2np85?sheet=Orders';
+
 
   const cart = JSON.parse(localStorage.getItem("cart") || "[]");
   const total = cart.reduce((sum, item) => sum + Number(item.price), 0);
