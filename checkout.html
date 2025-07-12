@@ -7,161 +7,348 @@
   <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
   
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&family=Inter:wght@400;600&display=swap" rel="stylesheet">
-  <style>
+<style>
     :root {
-      --black: #121212;
-      --gray: #f4f4f4;
+      --bg: #f5f6fa;
+      --card-bg: rgba(255, 255, 255, 0.8);
+      --glass: rgba(255, 255, 255, 0.6);
       --accent: #d4af37;
-      --border: #ddd;
+      --dark: #111;
+      --text: #2c2c2c;
+      --muted: #888;
+      --radius: 18px;
+      --shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+      --transition: all 0.3s ease-in-out;
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Inter', sans-serif; background: var(--gray); padding-bottom: 100px; }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding-bottom: 4rem;
+      line-height: 1.6;
+    }
+
+    h1, h2, h3, h4, h5 {
+      font-family: 'Playfair Display', serif;
+    }
+
     header {
-      background: var(--black); color: white;
+      background: var(--dark);
+      color: white;
+      padding: 1.5rem;
       text-align: center;
-      padding: 1.2rem;
-      font-family: 'Orbitron', sans-serif;
-      font-size: 1.7rem;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      font-size: 1.8rem;
+      font-family: 'Playfair Display', serif;
+      box-shadow: var(--shadow);
+      letter-spacing: 1px;
     }
-    h2, h3 { text-align: center; margin: 1.5rem 0 1rem; }
-    .card {
-      background: white;
-      margin: 1rem auto;
-      padding: 2rem;
-      max-width: 520px;
-      border-radius: 16px;
-      box-shadow: 0 6px 16px rgba(0,0,0,0.08);
-    }
+
     .flex-layout {
-      display: flex; gap: 2rem;
-      justify-content: center;
-      flex-wrap: wrap;
-      align-items: flex-start;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      max-width: 1200px;
+      margin: 3rem auto;
+      padding: 0 1rem;
     }
-    .summary-box {
-      position: sticky;
-      top: 1rem;
-      max-height: 100vh;
+
+    .card {
+      background: var(--glass);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 2rem 2.5rem;
+      border: 1px solid rgba(255, 255, 255, 0.3);
     }
+
     input, textarea {
-      width: 100%; margin-top: 1rem; padding: 0.9rem;
-      border-radius: 10px; border: 1px solid var(--border);
+      width: 100%;
+      padding: 1rem;
+      margin-top: 0.8rem;
+      border-radius: 12px;
+      border: 1px solid #ccc;
+      background: white;
       font-size: 1rem;
+      transition: var(--transition);
     }
+
     input:focus, textarea:focus {
-      outline: none; border-color: var(--black);
-      background: #fafafa;
+      outline: none;
+      border-color: var(--accent);
+      background: #fffdf8;
     }
-    button {
-      background: linear-gradient(to right, #000, #333);
-      color: white; padding: 1rem;
-      border: none; border-radius: 10px;
-      cursor: pointer; width: 100%;
-      margin-top: 1.5rem; font-size: 1rem;
-      font-weight: 600;
+
+    label {
+      font-weight: 500;
+      margin-top: 1.2rem;
+      display: block;
     }
+
     .radio-group {
-      display: flex; gap: 1rem; margin-top: 1.5rem;
+      display: flex;
+      gap: 1rem;
+      margin-top: 1.5rem;
     }
+
+    .radio-group input {
+      display: none;
+    }
+
     .radio-group label {
-      flex: 1; padding: 0.8rem;
-      border: 1px solid var(--border); border-radius: 10px;
-      text-align: center; cursor: pointer; background: #f9f9f9;
+      flex: 1;
+      text-align: center;
+      padding: 0.9rem 0;
+      border: 2px solid #ccc;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: var(--transition);
     }
+
     .radio-group input:checked + label {
-      background: var(--black); color: white; border-color: var(--black);
+      background: var(--dark);
+      color: white;
+      border-color: var(--dark);
     }
-    .radio-group input { display: none; }
+
     #upiDetails {
-      display: none; background: #f9f9f9;
-      padding: 1rem; margin-top: 1.2rem; border-radius: 10px;
+      display: none;
+      background: #f2f2f2;
+      padding: 1rem;
+      margin-top: 1.2rem;
+      border-radius: 12px;
+      font-size: 0.95rem;
     }
+
     .cart-item {
-      display: flex; justify-content: space-between;
-      margin-bottom: 1rem; padding-bottom: 1rem;
-      border-bottom: 1px solid #eee;
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid #ddd;
     }
+
     .cart-item img {
-      width: 60px; height: 60px;
-      object-fit: cover; border-radius: 10px;
-      margin-right: 1rem;
+      width: 60px;
+      height: 60px;
+      border-radius: 10px;
+      object-fit: cover;
     }
-    .toast {
-      position: fixed; bottom: 30px; left: 50%;
-      transform: translateX(-50%);
-      background: #333; color: white;
-      padding: 12px 20px; border-radius: 6px;
-      opacity: 0; z-index: 9999;
-      animation: fadein 0.3s forwards, fadeout 0.3s 2.8s forwards;
+
+    .cart-item small {
+      color: var(--muted);
+      font-size: 0.8rem;
     }
-    @keyframes fadein { to { opacity: 1; } }
-    @keyframes fadeout { to { opacity: 0; } }
+
+    button {
+      background: var(--dark);
+      color: white;
+      border: none;
+      padding: 1rem;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 1.5rem;
+      transition: var(--transition);
+    }
+
+    button:hover {
+      background: #333;
+    }
+
+    #secure, #privacy {
+      font-size: 0.85rem;
+      text-align: center;
+      color: var(--muted);
+      margin-top: 1.2rem;
+    }
+
     .popup-overlay {
-      position: fixed; inset: 0;
-      background: rgba(0,0,0,0.6);
-      display: none; align-items: center; justify-content: center;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.65);
+      display: flex;
+      justify-content: center;
+      align-items: center;
       z-index: 10000;
     }
+
     .popup-box {
-      background: white; max-width: 90%;
-      padding: 2rem; border-radius: 10px;
+      background: white;
+      padding: 2rem;
+      border-radius: var(--radius);
       text-align: center;
+      box-shadow: var(--shadow);
+      max-width: 90%;
     }
-    .popup-box button { margin: .5rem; padding: .6rem 1.2rem; }
-    #secure, #privacy {
-      text-align: center; font-size: 0.9rem;
-      color: gray; margin-top: 1rem;
+
+    .popup-box button {
+      padding: 0.6rem 1.2rem;
+      margin-top: 1rem;
     }
-    @media(max-width: 768px) {
-      .flex-layout { flex-direction: column; align-items: center; }
+
+    .toast {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #333;
+      color: white;
+      padding: 12px 20px;
+      border-radius: 6px;
+      opacity: 0;
+      z-index: 9999;
+      animation: fadein 0.3s forwards, fadeout 0.3s 2.8s forwards;
     }
+
+    @keyframes fadein { to { opacity: 1; } }
+    @keyframes fadeout { to { opacity: 0; } }
+
+    @media (max-width: 768px) {
+      .flex-layout {
+        grid-template-columns: 1fr;
+        padding: 0 1rem;
+      }
+
+      .card {
+        padding: 1.5rem;
+      }
+
+      header {
+        font-size: 1.5rem;
+      }
+    }
+    
+
+    .checkbox-container {
+  margin-top: 1.5rem;
+  font-size: 0.95rem;
+}
+
+.custom-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+.custom-checkbox input[type="checkbox"] {
+  display: none;
+}
+
+.custom-checkbox .checkmark {
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  background-color: #eee;
+  border: 2px solid #ccc;
+  display: inline-block;
+  position: relative;
+  transition: background 0.3s ease;
+}
+
+.custom-checkbox input[type="checkbox"]:checked + .checkmark {
+  background-color: var(--accent);
+  border-color: var(--accent);
+}
+
+.custom-checkbox .checkmark::after {
+  content: "";
+  position: absolute;
+  left: 5px;
+  top: 1px;
+  width: 6px;
+  height: 12px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.custom-checkbox input[type="checkbox"]:checked + .checkmark::after {
+  opacity: 1;
+}
+
+.custom-checkbox a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.custom-checkbox a:hover {
+  text-decoration: underline;
+}
+
   </style>
 </head>
 
 <body>
-<header>🛒 LuxeLiving Secure Checkout</header>
+  <header>🛒 LuxeLiving Secure Checkout</header>
 
-<div class="flex-layout">
-  <div class="card">
-    <h2>Your Details</h2>
-    <form id="orderForm">
-      <input type="text" name="name" placeholder="Full Name" required>
-      <input type="email" name="email" placeholder="Email" required>
-      <input type="tel" name="phone" placeholder="Phone (+91)" maxlength="13" required>
-      <textarea name="address" placeholder="Complete Shipping Address" required></textarea>
+    <div class="flex-layout">
+    <div id="cartSummary" class="card summary-box">
+      <h3>🧾 Order Summary</h3>
+      <div id="cartItems"></div>
+      <hr style="margin:1rem 0;">
+      <p>Subtotal: ₹<span id="subtotal">0</span></p>
+      <p>Discount: ₹<span id="discount">0</span></p>
+      <p><strong>Total: ₹<span id="totalDisplay">0</span></strong></p>
+    </div>
 
+    <div class="card">
+      <h2>Your Details</h2>
+      <form id="orderForm">
+        <input type="text" name="name" placeholder="Full Name" required>
+        <input type="email" name="email" placeholder="Email" required>
+        <input type="tel" name="phone" placeholder="Phone (+91)" maxlength="13" required>
+        <textarea name="address" placeholder="Complete Shipping Address" required></textarea>
 
-      <div class="radio-group">
-        <input type="radio" id="upi" name="payment" value="upi" required><label for="upi">💸 UPI</label>
-        <input type="radio" id="cod" name="payment" value="cod"><label for="cod">💵 COD</label>
-      </div>
+        <div class="radio-group">
+          <input type="radio" id="upi" name="payment" value="upi" required><label for="upi">💸 UPI</label>
+          <input type="radio" id="cod" name="payment" value="cod"><label for="cod">💵 COD</label>
+        </div>
 
-      <div id="upiDetails">
-        <p>Pay ₹<span id="amountText">0</span> to <strong>9995262372@ybl</strong></p>
-        <a id="upiLink" href="#"><button type="button">Pay via UPI App</button></a>
-        <input type="text" id="txnField" placeholder="Transaction ID">
-      </div>
+        <div id="upiDetails">
+          <p>Pay ₹<span id="amountText">0</span> to <strong>9995262372@ybl</strong></p>
+          <a id="upiLink" href="#"><button type="button">Pay via UPI App</button></a>
+          <input type="text" id="txnField" placeholder="Transaction ID">
+        </div>
 
-      <input type="text" id="promo" placeholder="Promo Code (optional)">
-      <textarea name="notes" placeholder="Order Notes (optional)" rows="2"></textarea>
-      <label><input type="checkbox" id="termsCheck" required> I agree to the <a href="#">terms & return policy</a></label>
+        <input type="text" id="promo" placeholder="Promo Code (optional)">
+        <textarea name="notes" placeholder="Order Notes (optional)" rows="2"></textarea>
 
-      <button type="submit">Place Order</button>
-      <div id="secure">🔒 Secure Payment • SSL Encrypted</div>
-      <div id="privacy">Your information is safe with us. We respect your privacy.</div>
-    </form>
+        <div class="checkbox-container">
+          <label for="termsCheck" class="custom-checkbox">
+            <input type="checkbox" id="termsCheck" required>
+            <span class="checkmark"></span>
+            I agree to the <a href="#">terms & return policy</a>
+          </label>
+        </div>
+
+        <button type="submit">Place Order</button>
+        <div id="secure">🔒 Secure Payment • SSL Encrypted</div>
+        <div id="privacy">Your information is safe with us. We respect your privacy.</div>
+      </form>
+    </div>
   </div>
 
-  <div id="cartSummary" class="card summary-box">
-    <h3>🧾 Order Summary</h3>
-    <div id="cartItems"></div>
-    <hr style="margin:1rem 0;">
-    <p>Subtotal: ₹<span id="subtotal">0</span></p>
-    <p>Discount: ₹<span id="discount">0</span></p>
-    <p><strong>Total: ₹<span id="totalDisplay">0</span></strong></p>
+
+
+  <div id="successPopup" class="popup-overlay" style="display:none;">
+    <div class="popup-box">
+      <p>✅ Order placed successfully!<br>Estimated delivery: <span id="deliveryDate"></span></p>
+      <button onclick="window.location.href='success.html'">Okay</button>
+    </div>
   </div>
-</div>
 
 
 <script>
@@ -286,22 +473,47 @@ document.getElementById("orderForm").addEventListener("submit", function (e) {
     }
   };
 
- fetch(SHEET_API_URL, {
-  method: "POST",
-  
+fetch(SHEET_API_URL, {
+  method: 'POST',
   headers: {
-    "Content-Type": "application/json",
+    'Content-Type': 'text/plain;charset=utf-8'
   },
   body: JSON.stringify(payload)
-  }).then(res => res.json()).then(json => {
-    if (json.success) {
-      localStorage.removeItem("cart");
-      ["name", "email", "phone", "address"].forEach(id => localStorage.removeItem("form_" + id));
-      window.location.href = "success.html?oid=" + orderId;
-    } else {
-      throw new Error("Submit failed");
-    }
-  }).catch(() => showToast("Failed to place order."));
+})
+.then(response => response.text())
+.then(resultText => {
+  let result;
+  try {
+    result = resultText.includes("success") || resultText.includes("Success")
+  ? { success: true }
+  : JSON.parse(resultText);
+
+  } catch {
+    result = { success: true }; // fallback if parsing fails
+  }
+
+  if (result.success === true) {
+    localStorage.removeItem("cart");
+
+    const delivery = new Date();
+    delivery.setDate(delivery.getDate() + 5);
+    document.getElementById("deliveryDate").textContent = delivery.toDateString();
+
+    window.location.href = "success.html";
+
+
+    // Optional auto-redirect after 3 seconds
+    // setTimeout(() => window.location.href = "success.html", 3000);
+  } else {
+    showToast("Something went wrong. Try again.");
+  }
+})
+.catch(err => {
+  console.error(err);
+  showToast("Failed to place order.");
+});
+
+
 });
 
 // Razorpay retry
