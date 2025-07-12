@@ -805,6 +805,14 @@
   border-color: #b3622f;
 }
 
+.mobile-bottom-bar a.active {
+  color: #d17842;
+  font-weight: 600;
+}
+
+.mobile-bottom-bar a.active i {
+  color: #d17842;
+}
 
   </style>
  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
@@ -822,8 +830,8 @@
   <div class="nav-container">
     <span class="logo">SheetShop</span>
     <nav class="nav-links">
-      <a href="#" class="nav-link">Home</a>
-      <a href="#products" class="nav-link">Shop</a>
+      <a href="index.html" class="nav-link">Home</a>
+      <a href="#" class="nav-link">Shop</a>
       <a href="#about" class="nav-link">About</a>
       <a href="#contact" class="nav-link">Contact</a>
     </nav>
@@ -881,19 +889,19 @@
 
 <!-- Slide-out Mobile Menu -->
 <div class="mobile-menu" id="mobileMenu">
-  <a href="#" onclick="toggleMenu()">Home</a>
-  <a href="#products" onclick="toggleMenu()">Shop</a>
+  <a href="index.html" onclick="toggleMenu()">Home</a>
+  <a href="#" onclick="toggleMenu()">Shop</a>
   <a href="#about" onclick="toggleMenu()">About</a>
   <a href="#contact" onclick="toggleMenu()">Contact</a>
 </div>
 
 <!-- Bottom Navigation for Mobile -->
 <nav class="nav-bar">
-  <a href="#" class="nav-item active">
+  <a href="index.html" class="nav-item">
     <i class="fas fa-home"></i>
     <span>Home</span>
   </a>
-  <a href="#products" class="nav-item">
+  <a href="#" class="nav-item active">
     <i class="fas fa-store"></i>
     <span>Shop</span>
   </a>
@@ -909,10 +917,6 @@
 </nav>
 
 
-<section id="recommendedSection" style="margin: 2rem 1rem;">
-  <h2 style="font-family:'Playfair Display', serif; margin-bottom: 1rem;">✨ Recommended for You</h2>
-  <div id="recommendedProducts" class="product-list"></div>
-</section>
 
 
   
@@ -1466,6 +1470,16 @@ function promptSizeQtyThenAdd(product, cardEl) {
   cardEl.appendChild(wrapper);
 }
 </script>
+<script>
+  // Highlight current page in mobile navbar
+  const currentPath = window.location.pathname.split("/").pop(); // e.g., "index.html"
+  document.querySelectorAll(".mobile-bottom-bar a").forEach(link => {
+    if (link.getAttribute("href") === currentPath) {
+      link.classList.add("active");
+    }
+  });
+</script>
+
 
 </body>
 </html>

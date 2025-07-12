@@ -805,6 +805,52 @@
   border-color: #b3622f;
 }
 
+.mobile-bottom-bar a.active {
+  color: #d17842;
+  font-weight: 600;
+}
+
+.mobile-bottom-bar a.active i {
+  color: #d17842;
+}
+body {
+  padding-top: 80px;
+}
+
+.recommended-section {
+  padding: 2rem 1.5rem;
+ 
+  
+ 
+  margin: 2rem auto;
+  max-width: 1200px;
+  display: block; /* ✅ Ensure it's not hidden */
+}
+
+.section-heading {
+  font-family: 'Playfair Display', serif;
+  font-size: 2.2rem;
+  margin-bottom: 1.5rem;
+  color: #222;
+  text-align: left;
+  position: relative;
+  padding-left: 1rem;
+  display: block; /* ✅ Force it to render */
+}
+
+.section-heading::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 6px;
+  height: 80%;
+  background: #d17842;
+  transform: translateY(-50%);
+  border-radius: 4px;
+}
+
+
 
   </style>
  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
@@ -823,7 +869,7 @@
     <span class="logo">SheetShop</span>
     <nav class="nav-links">
       <a href="#" class="nav-link">Home</a>
-      <a href="#products" class="nav-link">Shop</a>
+      <a href="shop.html" class="nav-link">Shop</a>
       <a href="#about" class="nav-link">About</a>
       <a href="#contact" class="nav-link">Contact</a>
     </nav>
@@ -882,7 +928,7 @@
 <!-- Slide-out Mobile Menu -->
 <div class="mobile-menu" id="mobileMenu">
   <a href="#" onclick="toggleMenu()">Home</a>
-  <a href="#products" onclick="toggleMenu()">Shop</a>
+  <a href="shop.html" onclick="toggleMenu()">Shop</a>
   <a href="#about" onclick="toggleMenu()">About</a>
   <a href="#contact" onclick="toggleMenu()">Contact</a>
 </div>
@@ -909,16 +955,14 @@
 </nav>
 
 
-<section id="recommendedSection" style="margin: 2rem 1rem;">
-  <h2 style="font-family:'Playfair Display', serif; margin-bottom: 1rem;">✨ Recommended for You</h2>
+<section id="recommendedSection" class="recommended-section">
+  <h2 class="section-heading"> Recommended for You</h2>
   <div id="recommendedProducts" class="product-list"></div>
 </section>
 
-
-  
   <main>
 
-<div class="filter-bar" id="filterBar"></div>
+
 
 
     <div id="products" class="product-list"></div>
