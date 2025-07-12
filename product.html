@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Product Detail - SheetShop</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body { font-family: sans-serif; padding: 1rem; max-width: 600px; margin: auto; }
+    .product-image { width: 100%; height: auto; border-radius: 8px; }
+    .dropdown, input[type=number] { padding: 0.5rem; font-size: 1rem; margin-top: 10px; width: 100%; border-radius: 5px; }
+    .btn { margin-top: 15px; background: #121212; color: white; padding: 0.8rem 1.2rem; border: none; width: 100%; border-radius: 5px; cursor: pointer; }
+  </style>
+</head>
+<body>
+
+  <img id="productImg" class="product-image" src="" alt="Product" />
+  <h2 id="productName"></h2>
+  <p id="productPrice"></p>
+  <p id="productDesc"></p>
+
+  <select id="sizeDropdown" class="dropdown"></select>
+  <input type="number" id="quantityInput" min="1" value="1" class="dropdown" />
+  <button class="btn" onclick="addToCart()">Add to Cart</button>
+
+  <script>
+    const ENABLE_SIZE_SELECTION = true;
+    const ENABLE_QUANTITY_SELECTION = false;
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const data = urlParams.get('data');
+    if (!data) {
+      document.body.innerHTML = "<p>Product data missing</p>";
+      throw new Error("No product data found in URL");
+    }
+
+    const product = JSON.parse(decodeURIComponent(data));
+    document.getElementById("productImg").src = product.image;
+    document.getElementById("productName").textContent = product.name;
+    document.getElementById("productPrice").textContent = `₹${product.price}`;
+    document.getElementById("productDesc").textContent = product.description || "No description available.";
+
+    // Populate size dropdown
+    const sizeDropdown = document.getElementById("sizeDropdown");
+    if (ENABLE_SIZE_SELECTION && product.availableSizes) {
+      const sizes = product.availableSizes.split(',').map(s => s.trim());
+      sizes.forEach(size => {
+        const option = document.createElement("option");
+        option.value = size;
+        option.textContent = size;
+        sizeDropdown.appendChild(option);
+      });
+    } else {
+      sizeDropdown.style.display = "none";
+    }
+
+    if (!ENABLE_QUANTITY_SELECTION) {
+      document.getElementById("quantityInput").style.display = "none";
+    }
+
+    function addToCart() {
+      const selectedSize = ENABLE_SIZE_SELECTION ? sizeDropdown.value : null;
+      const quantity = ENABLE_QUANTITY_SELECTION ? parseInt(document.getElementById("quantityInput").value) : 1;
+      if (ENABLE_SIZE_SELECTION && !selectedSize) {
+        alert("Please select a size.");
+        return;
+      }
+      const cartItem = {
+        ...product,
+        size: selectedSize,
+        quantity: quantity
+      };
+
+      let cart = JSON.parse(localStorage.getItem("cart")) || [];
+      cart.push(cartItem);
+      localStorage.setItem("cart", JSON.stringify(cart));
+      alert(`${product.name} added to cart`);
+      window.history.back();
+    }
+  </script>
+
+</body>
+</html>
