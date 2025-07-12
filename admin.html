@@ -166,20 +166,16 @@
     <div id="ordersTab" class="tab-content">
       <h2>View Orders</h2>
       <table id="ordersTable">
-<thead>
-  <tr>
-    <th>Name</th>
-    <th>Email</th>
-    <th>Items</th>
-    <th>Address</th>
-    <th>Transaction ID</th>
-    <th>Timestamp</th>
-  </tr>
-</thead>
-
-
-
-
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Items</th>
+            <th>Address</th>
+            <th>Transaction ID</th>
+            <th>Timestamp</th>
+          </tr>
+        </thead>
         <tbody></tbody>
       </table>
     </div>
@@ -187,7 +183,7 @@
 
   <script>
     const scriptURL = 'https://script.google.com/macros/s/AKfycbxFnCOawe3KmohiQ2vELJHOhCvlzbZ52z7OFVBugKRCqBqNJubQEhKXbukEN2dDoA5KDA/exec';
-    const adminPass = "luxeliving"; // <-- Change this password!
+    const adminPass = "luxeliving"; // set your password
 
     function checkPassword() {
       const input = document.getElementById("adminPassword").value;
@@ -204,7 +200,6 @@
     function switchTab(tab) {
       document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
       document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
-
       document.querySelector(`[onclick="switchTab('${tab}')"]`).classList.add('active');
       document.getElementById(`${tab}Tab`).classList.add('active');
     }
@@ -227,40 +222,38 @@
       });
     }
 
-async function loadOrders() {
-  try {
-    const res = await fetch(`${scriptURL}?sheet=Orders`);
-    const data = await res.json();
-    const tbody = document.querySelector('#ordersTable tbody');
-    tbody.innerHTML = '';
-
-    data.forEach(order => {
-      const row = `
-        <tr>
-          <td>${order["Name"] || '-'}</td>
-          <td>${order["Email"] || '-'}</td>
-          <td>${order["Items"] || '-'}</td>
-          <td>${order["Address"] || '-'}</td>
-          <td>${order["Email"] || '-'}</td>
-          <td>${order["Transaction ID"] || '-'}</td>
-          <td>${order["Timestamp"] || '-'}</td>
-        </tr>
-      `;
-      tbody.innerHTML += row;
-    });
-  } catch (err) {
-    console.error("Failed to load orders:", err);
-  }
-}
-
-
+    async function loadOrders() {
+      try {
+        const res = await fetch(`${scriptURL}?sheet=Orders`);
+        const data = await res.json();
+        const tbody = document.querySelector('#ordersTable tbody');
+        tbody.innerHTML = '';
+        data.forEach(order => {
+          const row = `
+            <tr>
+              <td>${order["Name"] || '-'}</td>
+              <td>${order["Email"] || '-'}</td>
+              <td>${order["Items"] || '-'}</td>
+              <td>${order["Address"] || '-'}</td>
+              <td>${order["Transaction ID"] || '-'}</td>
+              <td>${order["Timestamp"] || '-'}</td>
+            </tr>
+          `;
+          tbody.innerHTML += row;
+        });
+      } catch (err) {
+        console.error("Failed to load orders:", err);
+      }
+    }
 
     function addProduct() {
       const name = document.getElementById('newName').value;
       const price = document.getElementById('newPrice').value;
       const image = document.getElementById('newImage').value;
+
       fetch(scriptURL, {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           sheet: 'Products',
           action: 'add',
@@ -272,6 +265,7 @@ async function loadOrders() {
     function updateProduct(index, field, value) {
       fetch(scriptURL, {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           sheet: 'Products',
           action: 'edit',
@@ -285,6 +279,7 @@ async function loadOrders() {
     function deleteProduct(index) {
       fetch(scriptURL, {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           sheet: 'Products',
           action: 'delete',
@@ -292,8 +287,6 @@ async function loadOrders() {
         })
       }).then(loadProducts);
     }
-  
-
   </script>
 
 </body>
