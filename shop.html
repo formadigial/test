@@ -893,7 +893,7 @@
     <i class="fas fa-home"></i>
     <span>Home</span>
   </a>
-  <a href="shop.html" class="nav-item">
+  <a href="#products" class="nav-item">
     <i class="fas fa-store"></i>
     <span>Shop</span>
   </a>
@@ -1281,20 +1281,9 @@ fetch(SHEET_API_URL)
       return;
     }
 
-    // Filter only recommended products
-    const recommendedData = data.filter(product => {
-      const value = (product.Recommended || "").toLowerCase();
-      return value === '✅' || value === 'yes' || value === 'true';
-    });
-
-    if (recommendedData.length === 0) {
-      productsEl.innerHTML = `<p style="text-align:center; margin:2rem;">No recommended products available.</p>`;
-      return;
-    }
-
     const uniqueCategories = new Set();
 
-    recommendedData.forEach(product => {
+    data.forEach(product => {
       const div = document.createElement("div");
       div.className = "product-card";
       div.dataset.category = product.category?.toLowerCase() || "";
@@ -1366,8 +1355,7 @@ fetch(SHEET_API_URL)
     productsEl.innerHTML = `<p style="text-align:center; margin:2rem;">Failed to load products. Please check your internet connection or SheetDB settings.</p>`;
   });
 
-
-// Category Filter Event (optional, only if you still want it)
+// Category Filter Event (optional)
 document.getElementById("categoryFilter")?.addEventListener("change", function () {
   const category = this.value.toLowerCase();
   const productCards = document.querySelectorAll("#products .product-card");
