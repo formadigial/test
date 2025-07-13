@@ -352,7 +352,7 @@
 
 
 <script>
-const SHEET_API_URL = 'https://script.google.com/macros/s/AKfycbxFnCOawe3KmohiQ2vELJHOhCvlzbZ52z7OFVBugKRCqBqNJubQEhKXbukEN2dDoA5KDA/exec'; // Replace with your Apps Script URL
+const SHEET_API_URL = 'https://script.google.com/macros/s/AKfycbxtzhJ9S3q6Rlu_kbIBipu7SQ1HJ2y7ldwJ25YtsFuTaWnn9oLU135VzwV4k-u-sSIW4w/exec'; // Replace with your Apps Script URL
 const cart = JSON.parse(localStorage.getItem("cart") || "[]");
 const subtotal = cart.reduce((sum, item) => sum + Number(item.price) * (item.quantity || 1), 0);
 let discount = 0;
