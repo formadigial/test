@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin Panel</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <style>
+    :root {
+      --primary: #121212;
+      --highlight: #d17842;
+      --muted: #777;
+      --bg: #f1f3f6;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+    }
+
+    header {
+      background: var(--primary);
+      color: white;
+      padding: 1rem;
+      text-align: center;
+      font-size: 1.5rem;
+      font-weight: 600;
+    }
+
+    nav {
+      display: flex;
+      justify-content: center;
+      background: white;
+      border-bottom: 1px solid #ddd;
+    }
+
+    nav button {
+      padding: 1rem;
+      font-size: 1rem;
+      background: none;
+      border: none;
+      cursor: pointer;
+    }
+
+    nav button.active {
+      border-bottom: 3px solid var(--highlight);
+      color: var(--highlight);
+    }
+
+    .container {
+      padding: 2rem;
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+      border-radius: 0.5rem;
+      overflow: hidden;
+      font-size: 0.9rem;
+    }
+
+    th, td {
+      padding: 0.75rem 1rem;
+      border: 1px solid #e0e0e0;
+      text-align: left;
+    }
+
+    th {
+      background: #f9f9f9;
+    }
+
+    .loading, .error {
+      text-align: center;
+      margin: 1rem;
+    }
+
+    .error { color: red; }
+
+    #passwordPrompt {
+      text-align: center;
+      margin-top: 5rem;
+    }
+
+    #adminSections {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <header>🛠️ Admin Panel</header>
+
+  <div id="passwordPrompt">
+    <p>Enter Admin Password:</p>
+    <input type="password" id="adminPassword" placeholder="••••••" />
+    <button onclick="checkPassword()">Login</button>
+    <p class="error" id="passwordError" style="display:none;">Incorrect password.</p>
+  </div>
+
+  <div id="adminSections">
+    <nav>
+      <button onclick="showTab('orders')" class="active">Orders</button>
+      <button onclick="showTab('products')">Products</button>
+    </nav>
+
+    <div class="container" id="ordersSection">
+      <div class="loading" id="loadingOrders">Loading orders...</div>
+      <div class="error" id="errorOrders" style="display:none;">Failed to load orders.</div>
+      <table id="ordersTable" style="display: none;">
+        <thead id="ordersHead"></thead>
+        <tbody id="ordersBody"></tbody>
+      </table>
+    </div>
+
+    <div class="container" id="productsSection" style="display:none;">
+      <div class="loading" id="loadingProducts">Loading products...</div>
+      <div class="error" id="errorProducts" style="display:none;">Failed to load products.</div>
+      <table id="productsTable" style="display: none;">
+        <thead id="productsHead"></thead>
+        <tbody id="productsBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    const PASSWORD = "1"; // change this to your actual password
+    const ORDERS_URL = "https://script.google.com/macros/s/AKfycbxtzhJ9S3q6Rlu_kbIBipu7SQ1HJ2y7ldwJ25YtsFuTaWnn9oLU135VzwV4k-u-sSIW4w/exec?sheet=Orders";
+    const PRODUCTS_URL = "https://script.google.com/macros/s/AKfycbxtzhJ9S3q6Rlu_kbIBipu7SQ1HJ2y7ldwJ25YtsFuTaWnn9oLU135VzwV4k-u-sSIW4w/exec?sheet=Products";
+
+    function checkPassword() {
+      const input = document.getElementById('adminPassword').value;
+      if (input === PASSWORD) {
+        document.getElementById('passwordPrompt').style.display = 'none';
+        document.getElementById('adminSections').style.display = 'block';
+        loadOrders();
+        loadProducts();
+      } else {
+        document.getElementById('passwordError').style.display = 'block';
+      }
+    }
+
+    function showTab(tab) {
+      document.querySelectorAll('nav button').forEach(btn => btn.classList.remove('active'));
+      if (tab === 'orders') {
+        document.querySelector("[onclick*='orders']").classList.add('active');
+        document.getElementById('ordersSection').style.display = 'block';
+        document.getElementById('productsSection').style.display = 'none';
+      } else {
+        document.querySelector("[onclick*='products']").classList.add('active');
+        document.getElementById('ordersSection').style.display = 'none';
+        document.getElementById('productsSection').style.display = 'block';
+      }
+    }
+
+    function loadOrders() {
+      fetch(ORDERS_URL)
+        .then(res => res.json())
+        .then(data => renderTable(data, 'orders'))
+        .catch(() => document.getElementById('errorOrders').style.display = 'block');
+    }
+
+    function loadProducts() {
+      fetch(PRODUCTS_URL)
+        .then(res => res.json())
+        .then(data => renderTable(data, 'products'))
+        .catch(() => document.getElementById('errorProducts').style.display = 'block');
+    }
+
+   function renderTable(data, type) {
+  const head = document.getElementById(type + 'Head');
+  const body = document.getElementById(type + 'Body');
+  const table = document.getElementById(type + 'Table');
+  const loading = document.getElementById('loading' + capitalize(type));
+
+  loading.style.display = 'none';
+
+  if (!data || data.length === 0) {
+    document.getElementById('error' + capitalize(type)).textContent = 'No data found.';
+    document.getElementById('error' + capitalize(type)).style.display = 'block';
+    return;
+  }
+
+  const headers = Object.keys(data[0]);
+  head.innerHTML = `<tr>${headers.map(h => `<th>${h}</th>`).join('')}${type === 'products' ? '<th>Actions</th>' : ''}</tr>`;
+
+  body.innerHTML = data.map((row, index) => {
+    const rowInputs = headers.map(h => {
+      return type === 'products'
+        ? `<td><input data-field="${h}" data-index="${index}" value="${row[h] || ''}" /></td>`
+        : `<td>${row[h] || ''}</td>`;
+    }).join('');
+
+    const actions = type === 'products'
+      ? `<td><button onclick="saveProductRow(${index})">Save</button></td>`
+      : '';
+
+    return `<tr>${rowInputs}${actions}</tr>`;
+  }).join('');
+
+  table.style.display = 'table';
+}
+
+function saveProductRow(index) {
+  const rowInputs = document.querySelectorAll(`input[data-index="${index}"]`);
+  const data = {
+    sheet: "Products",
+    action: "editAll",
+    index: index
+  };
+
+  rowInputs.forEach(input => {
+    data[input.dataset.field] = input.value;
+  });
+
+  fetch(PRODUCTS_URL.replace('?sheet=Products', ''), {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(data)
+  })
+  .then(() => {
+    alert("Product updated.");
+    loadProducts(); // Optional: reload table after update
+  })
+  .catch(err => {
+    console.error("Failed to update row:", err);
+    alert("Failed to update product.");
+  });
+}
+
+    function capitalize(s) {
+      return s.charAt(0).toUpperCase() + s.slice(1);
+    }
+  </script>
+</body>
+</html>
