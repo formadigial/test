@@ -317,11 +317,7 @@
           <input type="radio" id="cod" name="payment" value="cod"><label for="cod">💵 COD</label>
         </div>
 
-        <div id="upiDetails">
-          <p>Pay ₹<span id="amountText">0</span> to <strong>9995262372@ybl</strong></p>
-          <a id="upiLink" href="#"><button type="button">Pay via UPI App</button></a>
-          <input type="text" id="txnField" placeholder="Transaction ID">
-        </div>
+      
 
         <input type="text" id="promo" placeholder="Promo Code (optional)">
         <textarea name="notes" placeholder="Order Notes (optional)" rows="2"></textarea>
@@ -352,19 +348,29 @@
 
 
 <script>
-const SHEET_API_URL = 'https://script.google.com/macros/s/AKfycbweX46IjJjVEHk2sSt7SPPgnqQ4ExeFpRkSp75cVilEhF1Zf3M-mOL6iUI6IQCxd5SWPg/exec'; // Replace with your Apps Script URL
-const cart = JSON.parse(localStorage.getItem("cart") || "[]");
+const SHEET_API_URL = 'https://script.google.com/macros/s/AKfycbxtzhJ9S3q6Rlu_kbIBipu7SQ1HJ2y7ldwJ25YtsFuTaWnn9oLU135VzwV4k-u-sSIW4w/exec';
+let cart = JSON.parse(localStorage.getItem("cart") || "[]");
+
 const subtotal = cart.reduce((sum, item) => sum + Number(item.price) * (item.quantity || 1), 0);
 let discount = 0;
 let finalTotal = subtotal;
 
-// Initial setup
-document.getElementById("subtotal").textContent = subtotal;
-document.getElementById("totalDisplay").textContent = finalTotal;
-document.getElementById("amountText").textContent = finalTotal;
+// DOM elements
+const subtotalEl = document.getElementById("subtotal");
+const totalDisplay = document.getElementById("totalDisplay");
+const amountText = document.getElementById("amountText");
+const discountEl = document.getElementById("discount");
+const cartItemsContainer = document.getElementById("cartItems");
+const txnField = document.getElementById("txnField");
+const upiRadio = document.getElementById("upi");
 
-// Promo code handling
-document.getElementById("promo").addEventListener("change", () => {
+// Set initial values
+subtotalEl.textContent = subtotal;
+totalDisplay.textContent = finalTotal;
+amountText.textContent = finalTotal;
+
+// ================= Promo Code =================
+document.getElementById("promo")?.addEventListener("change", () => {
   const code = document.getElementById("promo").value.trim().toUpperCase();
   if (code === "FLAT10") {
     discount = Math.min(100, Math.floor(subtotal * 0.10));
@@ -375,32 +381,30 @@ document.getElementById("promo").addEventListener("change", () => {
     finalTotal = subtotal;
     if (code) showToast("Invalid promo code");
   }
-  document.getElementById("discount").textContent = discount;
-  document.getElementById("totalDisplay").textContent = finalTotal;
-  document.getElementById("amountText").textContent = finalTotal;
+  discountEl.textContent = discount;
+  totalDisplay.textContent = finalTotal;
+  amountText.textContent = finalTotal;
 });
 
-// Save form state
+// ================= Save Form State =================
 ["name", "email", "phone", "address"].forEach(id => {
   const el = document.querySelector(`[name="${id}"]`);
+  if (!el) return;
   el.value = localStorage.getItem("form_" + id) || "";
   el.addEventListener("input", () => {
     localStorage.setItem("form_" + id, el.value);
   });
 });
 
-
-// Format phone input
-document.querySelector('[name="phone"]').addEventListener("input", function () {
+// ================= Phone Formatting =================
+document.querySelector('[name="phone"]')?.addEventListener("input", function () {
   this.value = this.value.replace(/[^\d]/g, '').slice(0, 10);
   if (!this.value.startsWith("+91") && this.value.length === 10) {
     this.value = "+91 " + this.value;
   }
 });
 
-// Show UPI field if selected
-const upiRadio = document.getElementById("upi");
-const txnField = document.getElementById("txnField");
+// ================= Payment Method Toggle =================
 document.querySelectorAll('input[name="payment"]').forEach(radio => {
   radio.addEventListener("change", () => {
     document.getElementById("upiDetails").style.display = upiRadio.checked ? "block" : "none";
@@ -409,11 +413,25 @@ document.querySelectorAll('input[name="payment"]').forEach(radio => {
   });
 });
 
-// Render cart items
-const cartItemsContainer = document.getElementById("cartItems");
-if (cart.length === 0) {
-  cartItemsContainer.innerHTML = "<p>Your cart is empty.</p>";
-} else {
+// ================= Render Cart Items =================
+function renderCartUI() {
+  let cart = JSON.parse(localStorage.getItem("cart") || "[]");
+  if (cart.length === 0) {
+    cartItemsContainer.innerHTML = "<p>Your cart is empty.</p>";
+    subtotalEl.textContent = "0";
+    discountEl.textContent = "0";
+    totalDisplay.textContent = "0";
+    amountText.textContent = "0";
+    return;
+  }
+
+  subtotal = cart.reduce((sum, item) => sum + Number(item.price) * (item.quantity || 1), 0);
+  finalTotal = subtotal - discount;
+
+  subtotalEl.textContent = subtotal;
+  totalDisplay.textContent = finalTotal;
+  amountText.textContent = finalTotal;
+
   cartItemsContainer.innerHTML = cart.map(item => {
     const qty = item.quantity || 1;
     const deliveryDays = item.deliveryDays || 5;
@@ -431,7 +449,7 @@ if (cart.length === 0) {
   }).join("");
 }
 
-// Order form submit
+// ================= Order Form Submit =================
 document.getElementById("orderForm").addEventListener("submit", function (e) {
   e.preventDefault();
 
@@ -441,10 +459,9 @@ document.getElementById("orderForm").addEventListener("submit", function (e) {
   const address = this.address.value.trim();
   const notes = this.notes.value.trim();
   const payment = document.querySelector('input[name="payment"]:checked')?.value;
-  const txn = txnField.value.trim();
   const agreed = document.getElementById("termsCheck").checked;
 
-  if (!name || !email || !phone || !address || !payment || (upiRadio.checked && !txn)) {
+  if (!name || !email || !phone || !address || !payment) {
     return showToast("Please fill all required fields.");
   }
   if (!agreed) return showToast("Please accept the terms.");
@@ -460,7 +477,7 @@ document.getElementById("orderForm").addEventListener("submit", function (e) {
       "Phone": phone,
       "Address": address,
       "Payment Method": payment.toUpperCase(),
-      "Transaction ID": txn || "N/A",
+      "Transaction ID": "N/A", // Will be updated after payment if UPI
       "Items": cart.map(i => {
         const size = i.size ? `Size: ${i.size}` : "";
         const qty = i.quantity || 1;
@@ -473,78 +490,70 @@ document.getElementById("orderForm").addEventListener("submit", function (e) {
     }
   };
 
-fetch(SHEET_API_URL, {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'text/plain;charset=utf-8'
-  },
-  body: JSON.stringify(payload)
-})
-.then(response => response.text())
-.then(resultText => {
-  let result;
-  try {
-    result = resultText.includes("success") || resultText.includes("Success")
-  ? { success: true }
-  : JSON.parse(resultText);
-
-  } catch {
-    result = { success: true }; // fallback if parsing fails
+  // If UPI, go to Razorpay first
+  if (payment.toLowerCase() === "upi") {
+    const options = {
+      key: "rzp_live_LsOtu3jPLnqjXr", // Replace with your key
+      amount: finalTotal * 100,
+      currency: "INR",
+      name: "LuxeLiving",
+      description: "Furniture Order",
+      handler: function (response) {
+        payload.data["Transaction ID"] = response.razorpay_payment_id;
+        sendOrder(payload); // Send to Google Sheets after payment
+      },
+      prefill: { name, email },
+      theme: { color: "#000" }
+    };
+    new Razorpay(options).open();
+    return; // Stop here, will resume in handler
   }
 
-  if (result.success === true) {
+  // If not UPI, send directly
+  sendOrder(payload);
+});
+
+// Separate function for sending to Google Sheets
+function sendOrder(payload) {
+  fetch(SHEET_API_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify(payload)
+  })
+  .then(res => res.text())
+  .then(() => {
     localStorage.removeItem("cart");
-
-    const delivery = new Date();
-    delivery.setDate(delivery.getDate() + 5);
-    document.getElementById("deliveryDate").textContent = delivery.toDateString();
-
     window.location.href = "success.html";
+  })
+  .catch(() => {
+    showToast("Failed to place order.");
+  });
+}
 
-
-    // Optional auto-redirect after 3 seconds
-    // setTimeout(() => window.location.href = "success.html", 3000);
-  } else {
-    showToast("Something went wrong. Try again.");
-  }
-})
-.catch(err => {
-  console.error(err);
-  showToast("Failed to place order.");
-});
-
-
-});
-
-// Razorpay retry
-document.getElementById("upiLink").addEventListener("click", function (e) {
-  e.preventDefault();
-  if (!upiRadio.checked) return showToast("Select UPI payment first.");
-
+// ================= Razorpay Payment =================
+function startRazorpayPayment(name, email) {
   const options = {
-    key: "rzp_live_LsOtu3jPLnqjXr", // Replace with your key
+    key: "rzp_live_LsOtu3jPLnqjXr", // Replace with your Razorpay key
     amount: finalTotal * 100,
     currency: "INR",
     name: "LuxeLiving",
     description: "Furniture Order",
     handler: function (response) {
       txnField.value = response.razorpay_payment_id;
-      document.getElementById("orderForm").dispatchEvent(new Event("submit", { cancelable: true }));
+      placeOrder(name, email, document.querySelector('[name="phone"]').value, document.querySelector('[name="address"]').value, document.querySelector('[name="notes"]').value, "UPI", txnField.value);
     },
     modal: {
       ondismiss: function () {
         showToast("Payment cancelled. Try again.");
       }
     },
-    prefill: {
-      name: document.getElementById("orderForm").name.value,
-      email: document.getElementById("orderForm").email.value
-    },
+    prefill: { name, email },
     theme: { color: "#000" }
   };
   new Razorpay(options).open();
-});
+}
 
+// ================= Toast Function =================
 function showToast(msg) {
   const toast = document.createElement("div");
   toast.className = "toast";
@@ -553,6 +562,9 @@ function showToast(msg) {
   setTimeout(() => toast.remove(), 3000);
 }
 </script>
+
+
+
 </body>
 </html>
 

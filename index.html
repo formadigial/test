@@ -853,6 +853,64 @@ body {
 
 
 
+
+.toast {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: #333;
+  color: white;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  z-index: 9999;
+}
+.toast.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.cart-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #ddd;
+  position: relative;
+}
+
+.delete-btn {
+  background: rgba(0,0,0,0.05);
+  border: none;
+  color: var(--dark);
+  font-size: 1.2rem;
+  font-weight: bold;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.delete-btn:hover {
+  background: var(--accent);
+  color: white;
+  transform: translateY(-50%) scale(1.1);
+}
+
+
+
   </style>
  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 
@@ -960,6 +1018,11 @@ body {
   <h2 class="section-heading"> Recommended for You</h2>
   <div id="recommendedProducts" class="product-list"></div>
 </section>
+<section id="allSection" class="recommended-section">
+  <h2 class="section-heading">All Products</h2>
+  <div id="allProducts" class="product-list"></div>
+</section>
+
 
   <main>
 
@@ -999,15 +1062,15 @@ function toggleMobileSearch() {
 function setupSearch() {
   const desktopSearch = document.getElementById('searchInput');
   const mobileSearch = document.getElementById('mobileSearchBar');
+function filterProducts(query) {
+  const productCards = document.querySelectorAll("#allProducts .product-card");
+  productCards.forEach(card => {
+    const name = card.querySelector("h3").textContent.toLowerCase();
+    card.style.display = name.includes(query) ? "flex" : "none";
+  });
+}
 
-  function filterProducts(query) {
-    const productCards = document.querySelectorAll("#products .product-card");
-    productCards.forEach(card => {
-      const name = card.querySelector("h3").textContent.toLowerCase();
-      card.style.display = name.includes(query) ? "flex" : "none";
 
-    });
-  }
 // Category filtering
 document.querySelectorAll(".filter-btn").forEach(btn => {
   btn.addEventListener("click", () => {
@@ -1148,8 +1211,8 @@ window.addEventListener("storage", () => {
 
   <script>
 
-const ENABLE_SIZE_SELECTION = true;
-const ENABLE_QUANTITY_SELECTION = false;
+const ENABLE_SIZE_SELECTION = false;
+const ENABLE_QUANTITY_SELECTION = true;
 const ENABLE_INLINE_SIZE_SELECTION = true; // 🔥 new flag to toggle inline selection
 
 
@@ -1245,20 +1308,7 @@ function showToast(text) {
     setTimeout(() => toast.remove(), 3000);
   }
 
-  // Initial skeletons
-  productsEl.innerHTML = '';
-  for (let i = 0; i < 6; i++) {
-    const div = document.createElement("div");
-    div.className = "product-card loader-card";
-    div.innerHTML = `
-      <div class="loader">
-        <div class="face"><div class="circle"></div></div>
-        <div class="face"><div class="circle"></div></div>
-      </div>
-      <p class="loader-text">Loading product...</p>
-    `;
-    productsEl.appendChild(div);
-  }
+
 
  function generateCategoryButtons(categorySet, enableCount = false) {
   const filterBar = document.getElementById("filterBar");
@@ -1310,97 +1360,134 @@ function showToast(text) {
   // Fetch products
 // Fetch products
 
+function showToast(message) {
+  let toast = document.createElement("div");
+  toast.className = "toast";
+  toast.textContent = message;
+  document.body.appendChild(toast);
+
+  setTimeout(() => toast.classList.add("show"), 10);
+
+  setTimeout(() => {
+    toast.classList.remove("show");
+    setTimeout(() => toast.remove(), 300);
+  }, 3000); // stays for 3s
+}
 
 
 
+const recommendedContainer = document.getElementById("recommendedProducts");
+const allContainer = document.getElementById("allProducts");
 
+function showLoaders(container, count) {
+  container.innerHTML = '';
+  for (let i = 0; i < count; i++) {
+    const div = document.createElement("div");
+    div.className = "product-card loader-card";
+    div.innerHTML = `
+      <div class="loader">
+        <div class="face"><div class="circle"></div></div>
+        <div class="face"><div class="circle"></div></div>
+      </div>
+      <p class="loader-text">Loading product...</p>
+    `;
+    container.appendChild(div);
+  }
+}
 
+function createProductCard(product) {
+  const div = document.createElement("div");
+  div.className = "product-card";
+  div.dataset.category = product.category?.toLowerCase() || "";
+
+  const imageWrapper = document.createElement("div");
+  imageWrapper.className = "image-wrapper";
+
+  const img = document.createElement("img");
+  img.loading = "lazy";
+  img.src = product.image;
+  img.alt = product.name;
+  imageWrapper.appendChild(img);
+
+  const h3 = document.createElement("h3");
+  h3.textContent = product.name;
+
+  const p = document.createElement("p");
+  p.textContent = `₹${product.price}`;
+
+  const cartButton = document.createElement("button");
+  cartButton.className = "cart-action-btn";
+  cartButton.innerHTML = `<i class="fas fa-cart-plus"></i> Add to Cart`;
+  cartButton.onclick = e => {
+    e.stopPropagation();
+    addToCart(product);
+showToast(`${product.name} added to cart`);
+
+  };
+
+  const wishlistButton = document.createElement("button");
+  wishlistButton.className = "icon-wishlist-btn";
+  wishlistButton.innerHTML = '<i class="fas fa-heart"></i>';
+  wishlistButton.style.background = "#d17842";
+  wishlistButton.style.marginLeft = "0.5rem";
+  wishlistButton.onclick = e => {
+    e.stopPropagation();
+    addToWishlist(product);
+  };
+
+  const buttonGroup = document.createElement("div");
+  buttonGroup.style.display = "flex";
+  buttonGroup.style.justifyContent = "center";
+  buttonGroup.style.gap = "0.5rem";
+  buttonGroup.appendChild(cartButton);
+  buttonGroup.appendChild(wishlistButton);
+
+  div.appendChild(imageWrapper);
+  div.appendChild(h3);
+  div.appendChild(p);
+  div.appendChild(buttonGroup);
+
+  div.onclick = () => openProductPage(product);
+
+  return div;
+}
+
+// Show loaders immediately based on last session
+let lastRecommendedCount = parseInt(localStorage.getItem("lastRecommendedCount")) || 3;
+let lastAllCount = parseInt(localStorage.getItem("lastAllCount")) || 6;
+showLoaders(recommendedContainer, lastRecommendedCount);
+showLoaders(allContainer, lastAllCount);
 
 fetch(SHEET_API_URL)
   .then(res => res.json())
   .then(data => {
-    productsEl.innerHTML = '';
-
     if (!Array.isArray(data) || data.length === 0) {
-      productsEl.innerHTML = `<p style="text-align:center; margin:2rem;">No products available.</p>`;
+      allContainer.innerHTML = `<p style="text-align:center; margin:2rem;">No products available.</p>`;
       return;
     }
 
-    // Filter only recommended products
     const recommendedData = data.filter(product => {
       const value = (product.Recommended || "").toLowerCase();
       return value === '✅' || value === 'yes' || value === 'true';
     });
 
-    if (recommendedData.length === 0) {
-      productsEl.innerHTML = `<p style="text-align:center; margin:2rem;">No recommended products available.</p>`;
-      return;
-    }
+    // Save counts for next time
+    localStorage.setItem("lastRecommendedCount", recommendedData.length || 0);
+    localStorage.setItem("lastAllCount", data.length || 0);
+
+    // Replace loaders with real products
+    recommendedContainer.innerHTML = '';
+    allContainer.innerHTML = '';
 
     const uniqueCategories = new Set();
 
     recommendedData.forEach(product => {
-      const div = document.createElement("div");
-      div.className = "product-card";
-      div.dataset.category = product.category?.toLowerCase() || "";
+      recommendedContainer.appendChild(createProductCard(product));
+    });
 
+    data.forEach(product => {
       if (product.category) uniqueCategories.add(product.category);
-
-      const imageWrapper = document.createElement("div");
-      imageWrapper.className = "image-wrapper";
-
-      const img = document.createElement("img");
-      img.loading = "lazy";
-      img.src = product.image;
-      img.alt = product.name;
-      imageWrapper.appendChild(img);
-
-      const h3 = document.createElement("h3");
-      h3.textContent = product.name;
-
-      const p = document.createElement("p");
-      p.textContent = `₹${product.price}`;
-
-      const cartButton = document.createElement("button");
-      cartButton.className = "cart-action-btn";
-      cartButton.innerHTML = `<i class="fas fa-cart-plus"></i> Add to Cart`;
-
-      const wishlistButton = document.createElement("button");
-      wishlistButton.className = "icon-wishlist-btn";
-      wishlistButton.innerHTML = '<i class="fas fa-heart"></i>';
-      wishlistButton.style.background = "#d17842";
-      wishlistButton.style.marginLeft = "0.5rem";
-
-      // Button logic
-      cartButton.onclick = (e) => {
-        e.stopPropagation();
-        if (ENABLE_INLINE_SIZE_SELECTION && (ENABLE_SIZE_SELECTION || ENABLE_QUANTITY_SELECTION)) {
-          promptSizeQtyThenAdd(product, div);
-        } else {
-          addToCart(product);
-        }
-      };
-
-      wishlistButton.onclick = (e) => {
-        e.stopPropagation();
-        addToWishlist(product);
-      };
-
-      const buttonGroup = document.createElement("div");
-      buttonGroup.style.display = "flex";
-      buttonGroup.style.justifyContent = "center";
-      buttonGroup.style.gap = "0.5rem";
-      buttonGroup.appendChild(cartButton);
-      buttonGroup.appendChild(wishlistButton);
-
-      div.onclick = () => openProductPage(product);
-
-      div.appendChild(imageWrapper);
-      div.appendChild(h3);
-      div.appendChild(p);
-      div.appendChild(buttonGroup);
-
-      productsEl.appendChild(div);
+      allContainer.appendChild(createProductCard(product));
     });
 
     setupSearch();
@@ -1408,8 +1495,9 @@ fetch(SHEET_API_URL)
   })
   .catch(err => {
     console.error("Error fetching products:", err);
-    productsEl.innerHTML = `<p style="text-align:center; margin:2rem;">Failed to load products. Please check your internet connection or SheetDB settings.</p>`;
+    allContainer.innerHTML = `<p style="text-align:center; margin:2rem;">Failed to load products.</p>`;
   });
+
 
 
 // Category Filter Event (optional, only if you still want it)

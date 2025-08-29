@@ -814,6 +814,27 @@
   color: #d17842;
 }
 
+
+.toast {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: #333;
+  color: white;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  z-index: 9999;
+}
+.toast.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+
   </style>
  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 
@@ -1107,7 +1128,7 @@ window.addEventListener("storage", () => {
 
   <script>
 
-const ENABLE_SIZE_SELECTION = true;
+const ENABLE_SIZE_SELECTION = false;
 const ENABLE_QUANTITY_SELECTION = false;
 const ENABLE_INLINE_SIZE_SELECTION = true; // 🔥 new flag to toggle inline selection
 
@@ -1326,6 +1347,8 @@ fetch(SHEET_API_URL)
           promptSizeQtyThenAdd(product, div);
         } else {
           addToCart(product);
+showToast(`${product.name} added to cart`);
+
         }
       };
 
@@ -1370,6 +1393,19 @@ document.getElementById("categoryFilter")?.addEventListener("change", function (
 });
 
 
+function showToast(message) {
+  let toast = document.createElement("div");
+  toast.className = "toast";
+  toast.textContent = message;
+  document.body.appendChild(toast);
+
+  setTimeout(() => toast.classList.add("show"), 10);
+
+  setTimeout(() => {
+    toast.classList.remove("show");
+    setTimeout(() => toast.remove(), 300);
+  }, 3000); // stays for 3s
+}
 
   </script>
 
